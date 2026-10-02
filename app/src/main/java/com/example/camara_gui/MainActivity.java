@@ -30,6 +30,12 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.common.util.concurrent.ListenableFuture;
 
+import com.example.camara_gui.data.AppDatabase;
+import com.example.camara_gui.data.Photo;
+import com.example.camara_gui.data.PhotoDao;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 public class MainActivity extends AppCompatActivity {
 
     private static final int CAMERA_PERMISSION_CODE = 100;
@@ -41,6 +47,9 @@ public class MainActivity extends AppCompatActivity {
     private FusedLocationProviderClient fusedLocationClient;
 
     private boolean useFrontCamera = false;
+    private PhotoDao photoDao;
+    private final ExecutorService databaseExecutor =
+            Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +64,9 @@ public class MainActivity extends AppCompatActivity {
         Button buttonSwitchCamera = findViewById(R.id.buttonSwitchCamera);
 
         fusedLocationClient =LocationServices.getFusedLocationProviderClient(this);
+
+        AppDatabase database = AppDatabase.getDatabase(this);
+        photoDao = database.photoDao();
 
         if (ContextCompat.checkSelfPermission(
                 this,
@@ -216,21 +228,43 @@ public class MainActivity extends AppCompatActivity {
                 new ImageCapture.OnImageSavedCallback() {
                     @Override
                     public void onImageSaved(
-                            @NonNull ImageCapture.OutputFileResults outputFileResults) {
+                            @NonNull ImageCapture.OutputFileResults outputFileResults
+                    ) {
 
                         Uri savedUri =
                                 outputFileResults.getSavedUri();
 
-                        Toast.makeText(
-                                MainActivity.this,
+                        if (savedUri == null) {
+                            return;
+                        }
 
-                                "Foto guardada\n"
-                                        + "Lat: " + latitude
-                                        + "\nLon: " + longitude
-                                        + "\nURI: " + savedUri,
+                        Photo photo = new Photo(
+                                savedUri.toString(),
+                                System.currentTimeMillis(),
+                                latitude,
+                                longitude
+                        );
 
-                                Toast.LENGTH_LONG
-                        ).show();
+                        databaseExecutor.execute(() -> {
+
+                            photoDao.insert(photo);
+
+                            int totalPhotos =
+                                    photoDao.getAll().size();
+
+                            runOnUiThread(() -> {
+
+                                Toast.makeText(
+                                        MainActivity.this,
+                                        "Foto guardada\n"
+                                                + "Fotos en Room: " + totalPhotos
+                                                + "\nLat: " + latitude
+                                                + "\nLon: " + longitude,
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            });
+                        });
+
                     }
 
                     @Override
