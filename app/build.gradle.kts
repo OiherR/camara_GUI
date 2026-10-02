@@ -7,7 +7,24 @@ android {
     compileSdk {
         version = release(36)
     }
+    flavorDimensions += "version"
 
+    productFlavors {
+        create("flavour1") {
+            dimension = "version"
+            applicationId = "com.example.camara_gui_android1"
+        }
+
+        create("flavour2") {
+            dimension = "version"
+            applicationId = "com.example.camara_gui_android2"
+        }
+
+        create("flavour3") {
+            dimension = "version"
+            applicationId = "com.example.camara_gui_android3"
+        }
+    }
     defaultConfig {
         applicationId = "com.example.camara_gui"
         minSdk = 24
