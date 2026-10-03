@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">camara_GUI</string>
+    <string name="take_photo">Hacer foto</string>
+    <string name="switch_camera">Cambiar cámara</string>
+    <string name="view_photos">Ver fotos</string>
+    <string name="delete">Eliminar</string>
+    <string name="camera_permission_required">Se necesita permiso de cámara</string>
+    <string name="photo_saved">Foto guardada</string>
+    <string name="save_error">Error al guardar</string>
+    <string name="camera_error">Error al iniciar la cámara</string>
+    <string name="photos_in_room">Fotos en Room</string>
+
+</resources>
