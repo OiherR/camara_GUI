@@ -36,6 +36,9 @@ import com.example.camara_gui.data.PhotoDao;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import android.content.Intent;
+import com.example.camara_gui.imageList.PhotoActivity;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final int CAMERA_PERMISSION_CODE = 100;
@@ -62,6 +65,15 @@ public class MainActivity extends AppCompatActivity {
 
         Button buttonPhoto = findViewById(R.id.buttonPhoto);
         Button buttonSwitchCamera = findViewById(R.id.buttonSwitchCamera);
+        Button buttonList = findViewById(R.id.buttonList);
+
+        buttonList.setOnClickListener(v -> {
+            Intent intent = new Intent(
+                    MainActivity.this,
+                    PhotoActivity.class
+            );
+            startActivity(intent);
+        });
 
         fusedLocationClient =LocationServices.getFusedLocationProviderClient(this);
 
@@ -145,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
             } catch (Exception e) {
                 Toast.makeText(
                         this,
-                        "Error al iniciar la cámara: " + e.getMessage(),
+                        getString(R.string.camera_error) + e.getMessage(),
                         Toast.LENGTH_LONG
                 ).show();
             }
@@ -256,8 +268,8 @@ public class MainActivity extends AppCompatActivity {
 
                                 Toast.makeText(
                                         MainActivity.this,
-                                        "Foto guardada\n"
-                                                + "Fotos en Room: " + totalPhotos
+                                        getString(R.string.photo_saved)
+                                                + getString(R.string.photos_in_room) + totalPhotos
                                                 + "\nLat: " + latitude
                                                 + "\nLon: " + longitude,
                                         Toast.LENGTH_LONG
@@ -274,7 +286,7 @@ public class MainActivity extends AppCompatActivity {
 
                         Toast.makeText(
                                 MainActivity.this,
-                                "Error al guardar: "
+                                getString(R.string.save_error)
                                         + exception.getMessage(),
                                 Toast.LENGTH_LONG
                         ).show();
@@ -302,7 +314,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(
                         this,
-                        "Se necesita permiso de cámara",
+                        getString(R.string.camera_permission_required),
                         Toast.LENGTH_SHORT
                 ).show();
             }
