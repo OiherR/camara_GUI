@@ -9,5 +9,11 @@
     <string name="save_error">Error saving photo</string>
     <string name="camera_error">Error starting camera</string>
     <string name="photos_in_room">Photos in Room</string>
+    <string name="google_ping">Google ping</string>
+    <string name="number_of_tries">Number of tries</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="success">Number of success</string>
+    <string name="failure">Number of failure</string>
 
 </resources>

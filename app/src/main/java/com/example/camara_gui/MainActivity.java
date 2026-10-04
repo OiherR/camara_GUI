@@ -39,6 +39,13 @@ import java.util.concurrent.Executors;
 import android.content.Intent;
 import com.example.camara_gui.imageList.PhotoActivity;
 
+import android.app.AlertDialog;
+import android.text.InputType;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import java.net.HttpURLConnection;
+import java.net.URL;
 public class MainActivity extends AppCompatActivity {
 
     private static final int CAMERA_PERMISSION_CODE = 100;
@@ -51,8 +58,10 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean useFrontCamera = false;
     private PhotoDao photoDao;
-    private final ExecutorService databaseExecutor =
-            Executors.newSingleThreadExecutor();
+    private final ExecutorService databaseExecutor = Executors.newSingleThreadExecutor();
+
+    private volatile boolean stopPing = false;
+    private final ExecutorService pingExecutor =Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +83,9 @@ public class MainActivity extends AppCompatActivity {
             );
             startActivity(intent);
         });
+        Button buttonPing = findViewById(R.id.buttonPing);
+
+        buttonPing.setOnClickListener(v -> showPingDialog());
 
         fusedLocationClient =LocationServices.getFusedLocationProviderClient(this);
 
@@ -319,5 +331,99 @@ public class MainActivity extends AppCompatActivity {
                 ).show();
             }
         }
+    }
+    private void showPingDialog() {
+
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+
+        int padding = 50;
+
+        layout.setPadding(padding, padding, padding, padding );
+
+        EditText inputAttempts = new EditText(this);
+        inputAttempts.setHint(getString(R.string.number_of_tries));
+        inputAttempts.setInputType(InputType.TYPE_CLASS_NUMBER);
+
+        TextView textResults = new TextView(this);
+        textResults.setText(
+                getString(R.string.success) + ": 0\n" +
+                getString(R.string.failure) + ": 0"
+        );
+
+        layout.addView(inputAttempts);
+        layout.addView(textResults);
+
+        AlertDialog dialog =
+                new AlertDialog.Builder(this)
+                        .setTitle(getString(R.string.google_ping))
+                        .setView(layout)
+                        .setPositiveButton(
+                                getString(R.string.start),
+                                null
+                        )
+                        .setNegativeButton(
+                                getString(R.string.stop),
+                                null
+                        )
+                        .create();
+
+        dialog.show();
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                .setOnClickListener(v -> {
+
+                    String value =
+                            inputAttempts.getText().toString();
+
+                    if (value.isEmpty()) {
+                        return;
+                    }
+                    int attempts = Integer.parseInt(value);
+                    stopPing = false;
+                    pingExecutor.execute(() -> {
+                        int success = 0;
+                        int failures = 0;
+                        for (int i = 0; i < attempts; i++) {
+                            if (stopPing) {
+                                break;
+                            }
+                            try {
+                                URL url =new URL("https://www.google.com");
+                                HttpURLConnection connection =(HttpURLConnection) url.openConnection();
+                                connection.setRequestMethod("GET");
+                                connection.setConnectTimeout(3000);
+                                connection.setReadTimeout(3000);
+                                int responseCode = connection.getResponseCode();
+                                if (responseCode >= 200 && responseCode < 400) {
+                                    success++;
+                                } else {
+                                    failures++;
+                                }
+                                connection.disconnect();
+                            } catch (Exception e) {
+                                failures++;
+                            }
+                            int finalSuccess = success;
+                            int finalFailures = failures;
+                            runOnUiThread(() -> {
+                                textResults.setText(
+                                        getString(R.string.success)
+                                                + ": "
+                                                + finalSuccess
+                                                + "\n"
+                                                + getString(R.string.failure)
+                                                + ": "
+                                                + finalFailures
+                                );
+                            });
+                        }
+                    });
+                });
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
+                .setOnClickListener(v -> {
+                    stopPing = true;
+
+                });
     }
 }

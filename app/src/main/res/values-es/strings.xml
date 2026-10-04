@@ -9,5 +9,10 @@
     <string name="save_error">Error al guardar</string>
     <string name="camera_error">Error al iniciar la cámara</string>
     <string name="photos_in_room">Fotos en Room</string>
-
+    <string name="google_ping">Ping de Google</string>
+    <string name="number_of_tries">Número de intentos</string>
+    <string name="start">Iniciar</string>
+    <string name="stop">Parar</string>
+    <string name="success">Éxitos</string>
+    <string name="failure">Fallos</string>
 </resources>
